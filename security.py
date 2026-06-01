@@ -3,11 +3,17 @@ from argon2.exceptions import VerifyMismatchError
 import re
 from datetime import datetime
 import math
-
+import pyotp
 
 # Lista 10 najpopularniejszych haseł (dla przykładu - w realnym systemie warto mieć plik .txt z 10 000 haseł)
 COMMON_PASSWORDS = ["Haslo123", "Admin123", "Password123", "Qwerty123", "User123"]
-ph = PasswordHasher()
+ph = PasswordHasher(
+    time_cost=3,          # Liczba iteracji (zalecane min. 2)
+    memory_cost=65536,    # 64 MB RAM (zalecane dla wysokiego bezpieczeństwa)
+    parallelism=1,        # Liczba równoległych wątków (dostosuj do procesora)
+    hash_len=32,          # Długość wygenerowanego hasza
+    salt_len=16,          # Długość soli (16 bajtów to standard bezpieczeństwa)
+)
 
 
 def hash_password(password: str):
@@ -82,3 +88,16 @@ def is_password_common(password: str) -> bool:
         if common.lower() in password_lower: # Sprawdza czy np. "haslo" jest częścią hasła
             return True
     return False
+
+def generate_totp_secret():
+    """Generuje unikalny klucz dla użytkownika (Base32)."""
+    return pyotp.random_base32()
+
+def verify_totp_code(secret, code):
+    """Weryfikuje czy podany kod jest poprawny dla danego klucza."""
+    totp = pyotp.TOTP(secret)
+    return totp.verify(code)
+
+def get_totp_uri(secret, username):
+    """Generuje URI do kodu QR (opcjonalne, ale bardzo przydatne)."""
+    return pyotp.totp.TOTP(secret).provisioning_uri(name=username, issuer_name="MojaAplikacja")
