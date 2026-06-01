@@ -96,9 +96,6 @@ projekt_wprowadzenie_cyber/
 
 ---
 
-## 🛡️ Przykładowe Dane do Testów
+## 📄 Licencja
 
-Jeśli chcesz przetestować aplikację bez zakładania nowego konta, w bazie danych domyślnie przygotowany jest profil testowy:
-*   **Nazwa użytkownika:** `User1`
-*   **Hasło:** `CyberPro123!@#`
-*   **Klucz TOTP (do ręcznego przepisania w Google Authenticator):** `2XCM35KDLZC2GNUIRIM3VXO4NT7VGK4L`
+Projekt jest udostępniany na warunkach licencji **MIT**. Szczegółowe informacje znajdują się w pliku [LICENSE](file:///C:/Users/danie/Desktop/projekt_wprowadzenie_cyber/LICENSE).
