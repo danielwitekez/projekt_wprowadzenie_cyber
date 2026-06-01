@@ -1,0 +1,30 @@
+# Python-specific ignores
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# Flask instance folder (contains local database)
+instance/
+*.db
+
+# Node-specific ignores
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# Frontend build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# IDE and OS specific ignores
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

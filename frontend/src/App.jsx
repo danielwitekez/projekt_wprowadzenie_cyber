@@ -86,6 +86,7 @@ function App() {
             <User size={20} color="#6b7280" />
             <input
               type="text" placeholder="Nazwa użytkownika" required
+              value={formData.username}
               onChange={(e) => setFormData({...formData, username: e.target.value})}
               style={styles.input}
             />
@@ -96,6 +97,7 @@ function App() {
             <Lock size={20} color="#6b7280" />
             <input
               type="password" placeholder="Hasło" required
+              value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               style={styles.input}
             />
@@ -107,7 +109,7 @@ function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
                 <span style={{color: '#4b5563'}}>Siła: {currentEntropy} bitów</span>
                 <span style={{ color: getStrengthColor(currentEntropy), fontWeight: 'bold' }}>
-                  {currentEntropy < 45 ? 'SŁABE' : currentEntropy < 75 ? 'ŚREDNIE' : 'MOCNE'}
+                   {currentEntropy < 45 ? 'SŁABE' : currentEntropy < 75 ? 'ŚREDNIE' : 'MOCNE'}
                 </span>
               </div>
               <div style={styles.progressBarBg}>
@@ -142,6 +144,7 @@ function App() {
               <ShieldCheck size={20} color="#6b7280" />
               <input
                 type="text" placeholder="Kod z aplikacji (6 cyfr)"
+                value={formData.totp_code}
                 onChange={(e) => setFormData({...formData, totp_code: e.target.value})}
                 style={styles.input}
               />

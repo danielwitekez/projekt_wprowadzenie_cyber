@@ -23,9 +23,15 @@ with app.app_context():
 
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    data = request.get_json() or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+
+    # Weryfikacja czy pola nie są puste
+    if not username:
+        return jsonify({"error": "Nazwa użytkownika nie może być pusta."}), 400
+    if not password:
+        return jsonify({"error": "Hasło nie może być puste."}), 400
 
     # 1. Podstawowa polityka (długość, znaki)
     is_valid, message = validate_password_policy(password)
@@ -47,8 +53,8 @@ def register():
     elif entropy > 60:
         strength = "Średnie"
 
-    # 4. Sprawdź czy użytkownik istnieje
-    if User.query.filter_by(username=username).first():
+    # 4. Sprawdź czy użytkownik istnieje (case-insensitive)
+    if User.query.filter(db.func.lower(User.username) == db.func.lower(username)).first():
         return jsonify({"error": "Użytkownik już istnieje"}), 400
 
     # NOWOŚĆ: Generowanie sekretu TOTP
@@ -68,7 +74,6 @@ def register():
         "totp_secret": user_totp_secret,
         "setup_uri": get_totp_uri(user_totp_secret, username),
         "password_entropy": entropy
-
     }), 201
 
 
@@ -77,12 +82,16 @@ from security import verify_totp_code  # dodaj do importów
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    totp_code = data.get('totp_code')  # NOWOŚĆ
+    data = request.get_json() or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    totp_code = data.get('totp_code', '')  # NOWOŚĆ
 
-    user = User.query.filter_by(username=username).first()
+    if not username:
+        return jsonify({"error": "Nazwa użytkownika nie może być pusta."}), 400
+
+    # Pobierz użytkownika w sposób niezależny od wielkości liter (case-insensitive)
+    user = User.query.filter(db.func.lower(User.username) == db.func.lower(username)).first()
 
     if not user:
         return jsonify({"error": "Błędny login lub hasło"}), 401
