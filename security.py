@@ -4,9 +4,24 @@ import re
 from datetime import datetime
 import math
 import pyotp
+import os
 
-# Lista 10 najpopularniejszych haseł (dla przykładu - w realnym systemie warto mieć plik .txt z 10 000 haseł)
-COMMON_PASSWORDS = ["Haslo123", "Admin123", "Password123", "Qwerty123", "User123"]
+# Wczytywanie bazy częstych haseł z pliku common_passwords.txt
+COMMON_PASSWORDS = set()
+try:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "common_passwords.txt")
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                pwd = line.strip().lower()
+                if pwd:
+                    COMMON_PASSWORDS.add(pwd)
+    else:
+        # Fallback w przypadku braku pliku
+        COMMON_PASSWORDS = {"haslo123", "admin123", "password123", "qwerty123", "user123"}
+except Exception:
+    COMMON_PASSWORDS = {"haslo123", "admin123", "password123", "qwerty123", "user123"}
 ph = PasswordHasher(
     time_cost=3,          # Liczba iteracji (zalecane min. 2)
     memory_cost=65536,    # 64 MB RAM (zalecane dla wysokiego bezpieczeństwa)
@@ -82,11 +97,24 @@ def calculate_entropy(password: str) -> float:
 
 
 def is_password_common(password: str) -> bool:
-    """Sprawdza, czy hasło jest na czarnej liście lub zaczyna się od popularnego wzorca."""
-    password_lower = password.lower()
-    for common in COMMON_PASSWORDS:
-        if common.lower() in password_lower: # Sprawdza czy np. "haslo" jest częścią hasła
-            return True
+    """Sprawdza, czy hasło znajduje się na liście popularnych/niebezpiecznych haseł,
+    wykrywając również proste modyfikacje (np. dopisanie znaków specjalnych lub cyfr na końcu)."""
+    password_lower = password.strip().lower()
+    
+    # 1. Dokładne sprawdzenie
+    if password_lower in COMMON_PASSWORDS:
+        return True
+        
+    # 2. Sprawdzenie po usunięciu wiodących/kończących znaków specjalnych
+    cleaned_specials = re.sub(r'^[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+|[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+$', '', password_lower)
+    if cleaned_specials in COMMON_PASSWORDS:
+        return True
+        
+    # 3. Sprawdzenie po usunięciu wiodących/kończących znaków specjalnych oraz cyfr
+    cleaned_specials_digits = re.sub(r'^[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+|[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+$', '', password_lower)
+    if cleaned_specials_digits and cleaned_specials_digits in COMMON_PASSWORDS:
+        return True
+        
     return False
 
 def generate_totp_secret():
